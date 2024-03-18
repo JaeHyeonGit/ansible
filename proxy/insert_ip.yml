@@ -1,0 +1,22 @@
+---
+- hosts: all
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: Insert ip list to squid ips.txt
+      lineinfile:
+        name: /etc/squid/allowed_ips.txt
+        state: present
+        line: "{{ item }}"
+      with_items: "{{ target_ip }}"
+
+    - name: squid restart
+      shell:
+        cmd: |
+          systemctl restart squid
+      register: squid
+
+    - name: squid result
+      debug:
+        msg:
+        - "{{ squid.stdout_lines }}"

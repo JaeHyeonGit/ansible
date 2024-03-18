@@ -1,0 +1,23 @@
+---
+- hosts: all
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: Proxy config on Centos
+      lineinfile:
+        name: /etc/yum.conf
+        create: yes
+        line: 'proxy=http://192.168.31.8:8080'
+
+    - name: Centos yum clean
+      shell: yum clean all
+
+    - name: Centos Update
+      yum:
+        update_cache: yes
+
+    - name: Update all installed package
+      yum:
+        name: '*'
+        state: latest
+

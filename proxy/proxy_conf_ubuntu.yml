@@ -1,0 +1,20 @@
+---
+- hosts: all
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: Proxy config on Ubuntu
+      lineinfile:
+        name: /etc/apt/apt.conf.d/apt.conf
+        create: yes
+        line: 'Acquire::http::Proxy "http://root:1234@192.168.31.8:8080/";'
+
+    - name: Ubuntu Update
+      apt:
+        update_cache: yes
+
+    - name: Update all installed package
+      apt:
+        name: "*"
+        state: latest
+
