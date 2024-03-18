@@ -1,0 +1,8 @@
+---
+remote_path: "/"
+local_path: "/var/lib/awx/projects/zabbix/roles/zabbix"
+gpg_path: "/etc/apt/trusted.gpg.d"
+
+#zabbix_server_ip: 192.168.7.3
+zabbix_agent_log_path: "/var/log/zabbix/log"
+
