@@ -1,0 +1,9 @@
+---
+- hosts: all
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: Check Connect Target
+      wait_for_connection:
+        delay: "300"
+        timeout: "300"
