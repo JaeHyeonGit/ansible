@@ -1,0 +1,17 @@
+---
+- hosts: all
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: ssh-keyscan
+      command: /usr/bin/ssh-keyscan -t ecdsa "{{ item }}"
+      with_items: "{{ target_host }}"
+      register: keyscan
+
+    - name: lineinfile
+      lineinfile:
+        name: /root/.ssh/known_hosts
+        create: yes
+        line: "{{ item.stdout }}"
+      with_items: 
+        - "{{ keyscan.results }}"
