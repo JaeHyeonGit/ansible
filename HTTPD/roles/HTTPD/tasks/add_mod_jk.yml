@@ -1,0 +1,71 @@
+---
+- name: Install mod_jk module file
+  unarchive:
+    src: "{{ local_path }}/files/tomcat-connectors-1.2.48-src.tar.gz"
+    dest: /data
+
+- name: Configure Mod JK Module - Tomcat connector 1.2.48
+  shell:
+    chdir: /data/tomcat-connectors-1.2.48-src/native/
+    cmd: |
+      ./configure --with-apxs=/data/httpd-2.4.57/bin/apxs
+      make
+      make install
+      chmod 755 /data/httpd-2.4.57/modules/mod_jk.so
+  register: modjk
+
+- name: Check Configure Mod JK Result
+  debug:
+    msg: "{{ modjk.stdout_lines }}"
+
+- name: Setting Mod JK Configure Variadble 
+  set_fact:
+    modjk_block: |
+      LoadModule jk_module modules/mod_jk.so
+      <IfModule jk_module>
+          JkWorkersFile /data/httpd-2.4.57/conf/workers.properties
+          JkShmFile logs/mod_jk.shm
+          JkLogFile logs/mod_jk.log
+          JkLogLevel info'
+          JkLogStampFormat "[%a %b %d %H:%M:%S %Y]"
+      </IfModule>
+      JKMount /* workerweb
+
+- name: Create Check Point
+  shell: 
+    cmd: awk '{print $1}' /data/httpd-2.4.57/conf/httpd.conf | grep JkLogStampFormat
+  ignore_errors: yes
+  register: check
+
+- name: Config HTTPD Mod JK configure
+  blockinfile:
+    path: /data/httpd-2.4.57/conf/httpd.conf
+    block: "{{ modjk_block }}"
+    insertbefore: "<IfModule unixd_module>"
+    marker: ' '
+  when: not check.stdout == "JkLogStampFormat"
+
+- name: Setting Workers Properties
+  lineinfile:
+    name: /data/httpd-2.4.57/conf/workers.properties
+    create: yes
+    line: "{{ item }}"
+  with_items:
+    - worker.list=workerweb
+    - worker.workerweb.type=ajp13
+    - worker.workerweb.host=TOMCAT_HOST
+    - worker.workerweb.port=TOMCAT_PORT
+
+- name: Insert Worker Infomation - host, port
+  lineinfile:
+    name: /data/httpd-2.4.57/conf/workers.properties
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: "TOMCAT_HOST", line: 'worker.workerweb.host={{ TOMCAT_HOST }}' }
+    - { regexp: "TOMCAT_PORT", line: 'worker.workerweb.port={{ TOMCAT_PORT }}' }
+
+- name: Restart Apache HTTPD
+  shell:
+    cmd: |
+      systemctl restart httpd

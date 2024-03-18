@@ -1,0 +1,8 @@
+---
+# defaults file for HTTPD
+
+local_path: "/var/lib/awx/projects/HTTPD/roles/HTTPD"
+Server_Name: "ServerName localhost:80"
+
+TOMCAT_HOST: localhost
+TOMCAT_PORT: 8009

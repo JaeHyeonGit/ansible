@@ -1,0 +1,9 @@
+---
+- name: Install Apache HTTPD
+  import_tasks: install.yml
+
+- name: Setting Mod jk
+  import_tasks: add_mod_jk.yml
+
+- name: Configure Redirect Config
+  import_tasks: redirect_conf.yml

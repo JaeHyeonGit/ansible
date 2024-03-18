@@ -1,0 +1,135 @@
+---
+- name: Install Essential Package
+  yum:
+    name:
+      - expat
+      - expat-devel
+      - expat-static
+
+- name: Create web Directory
+  file:
+    path: /data
+    state: directory
+    mode: '0755'
+
+- name: Install APR - Apache portable runtime
+  unarchive:
+    src: "{{ local_path }}/files/apr-1.7.4.tar.gz"
+    dest: /data
+
+- name: Configure apr
+  shell:
+    chdir: /data/apr-1.7.4
+    cmd: |
+      ./configure --prefix=/data/apr-1.7.4
+      make
+      make install
+  register: apr
+
+- name: Check apr configure result
+  debug:
+    msg: "{{ apr.stdout_lines }}"
+
+- name: Install APR UTIL - Apache portalbe runtime Utility
+  unarchive:
+    src: "{{ local_path }}/files/apr-util-1.6.3.tar.gz"
+    dest: /data
+
+- name: Configure apr-util
+  shell:
+    chdir: /data/apr-util-1.6.3
+    cmd: |
+      ./configure --prefix=/data/apr-util-1.6.3 \
+      --with-apr=/data/apr-1.7.4
+      make
+      make install
+  register: apr_util
+
+- name: Check apr-util configure result
+  debug:
+    msg: "{{ apr_util.stdout_lines }}"
+
+- name: Install PCRE - Perl compatible Regular Expressions
+  unarchive:
+    src: "{{ local_path }}/files/pcre-8.45.tar.gz"
+    dest: /data
+
+- name: Configure pcre
+  shell:
+    chdir: /data/pcre-8.45
+    cmd: |
+      ./configure --prefix=/data/pcre-8.45 \
+      --with-apr-util=/data/apr-util-1.6.3 \
+      --with-apr=/data/apr-1.7.4
+      make
+      make install
+  register: pcre
+
+- name: Check pcre configure result
+  debug:
+    msg: "{{ pcre.stdout_lines }}"
+
+- name: Install Apache HTTPD 2.4.57
+  unarchive:
+    src: "{{ local_path }}/files/httpd-2.4.57.tar.gz"
+    dest: /data
+
+- name: Configure Apache HTTPD
+  shell:
+    chdir: /data/httpd-2.4.57
+    cmd: |
+      ./configure --prefix=/data/httpd-2.4.57 \
+      --with-apr=/data/apr-1.7.4 \
+      --with-apr-util=/data/apr-util-1.6.3 \
+      --with-pcre=/data/pcre-8.45
+      make
+      make install
+  ignore_errors: yes
+  register: httpd
+
+- name: Check httpd configure result
+  debug:
+    msg: "{{ httpd.stdout_lines }}"
+
+- name: Create apache User
+  user:
+    name: apache
+    shell: /sbin/nologin
+
+- name: Register Systemd - httpd service
+  lineinfile:
+    name: /etc/systemd/system/httpd.service
+    create: yes
+    line: '{{ item }}'
+  with_items:
+    - "[Unit]"
+    - Description=The Apache HTTP Server 
+    - ""
+    - "[Service]"
+    - Type=forking
+    - ExecStart=/data/httpd-2.4.57/bin/apachectl start
+    - ExecReload=/data/httpd-2.4.57/bin/apachectl graceful
+    - ExecStop=/data/httpd-2.4.57/bin/apachectl stop
+    - KillSignal=SIGCONT
+    - PrivateTmp=true
+    - ""
+    - "[Install]"
+    - WantedBy=multi-user.target
+
+
+- name: HTTPD Configure - user, group, Servername
+  lineinfile:
+    path: /data/httpd-2.4.57/conf/httpd.conf
+    regexp: '{{ item.From }}'
+    line: '{{ item.To }}'
+  with_items:
+    - { From: '^User daemon$', To: 'User apache'}
+    - { From: '^Group daemon$', To: 'Group apache' }
+    - { From: '^#ServerName www.example.com:80$', To: '{{ Server_Name }}' }
+
+- name: Enable Systemd HTTPD service
+  shell: 
+    cmd: |
+      systemctl daemon-reload
+      systemctl enable httpd
+      systemctl start httpd

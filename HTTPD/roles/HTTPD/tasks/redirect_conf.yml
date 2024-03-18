@@ -1,0 +1,12 @@
+---
+- name: redirect
+  lineinfile:
+    path: /data/httpd-2.4.57/conf/httpd.conf
+    insertafter: "JKMount /* worker"
+    line: RedirectMatch ^/$ /loginForm.jsp
+
+- name: Restart HTTPD
+  shell:
+    cmd: systemctl restart httpd
+
+
