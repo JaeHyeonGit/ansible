@@ -1,0 +1,27 @@
+---
+- hosts: all
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: Update and Upgrade
+      yum:
+        update_cache: yes
+        
+    - name: Update all installed package 
+      yum: 
+        name: "*"
+        state: latest
+
+    - name: Install Haproxy2.4
+      yum:
+        name: haproxy
+        state: latest
+
+    - name: Check haproxy version
+      shell: haproxy -v
+      register: check
+
+    - name: Print check
+      debug:
+        msg:
+        - "{{ check.stdout }}"

@@ -1,0 +1,29 @@
+---
+- hosts: all
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: Update and Upgrade
+      apt:
+        upgrade: yes
+        update_cache: yes
+
+    - name: Install Haproxy2.4 PPA
+      shell: add-apt-repository ppa:vbernat/haproxy-2.4 -y
+
+    - name: Update and Upgrade
+      apt:
+        upgrade: yes
+        update_cache: yes
+
+    - name: Install Haproxy2.4
+      shell: "apt-get install haproxy=2.4.'\'* -y"
+
+    - name: Check haproxy version
+      shell: haproxy -v
+      register: check
+
+    - name: Print check
+      debug:
+        msg:
+        - "{{ check.stdout }}"
