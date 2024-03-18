@@ -1,0 +1,14 @@
+---
+- name: make webapps
+  file: 
+    path: "{{remote_path}}//webapps/app"
+    state: directory
+
+- name: Archive jsp tar.gz
+  unarchive:
+    src: "{{ local_path }}/files/jsp.tar.gz"
+    dest: "{{ remote_path }}/webapps/app"
+
+- name: restart tomcat
+  shell:
+    cmd: systemctl restart tomcat

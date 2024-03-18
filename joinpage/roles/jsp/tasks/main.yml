@@ -1,0 +1,3 @@
+---
+- name: Deploy JSP Source
+  import_tasks: deploy.yml

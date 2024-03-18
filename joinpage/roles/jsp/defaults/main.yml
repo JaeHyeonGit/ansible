@@ -1,0 +1,5 @@
+---
+remote_path: "/data/tomcat/apache-tomcat-8.5.93"
+local_path: "/var/lib/awx/projects/joinpage/roles/jsp/"
+
+
