@@ -1,0 +1,11 @@
+---
+- name: Scheduling script
+  cron:
+    name: Server Inspecting
+    job: sh "{{ remote_path }}/files/Server_Check.sh > Result.log 2>/dev/null"
+    user: root
+    weekday: "*"
+    month: "*"
+    day: "*"
+    hour: "*/2"
+    minute: "*"

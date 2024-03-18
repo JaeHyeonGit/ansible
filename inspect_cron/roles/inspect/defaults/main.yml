@@ -1,0 +1,3 @@
+---
+remote_path: "/cron"
+local_path: "/var/lib/awx/projects/inspect_cron/roles/inspect"

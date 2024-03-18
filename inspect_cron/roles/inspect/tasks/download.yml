@@ -1,0 +1,14 @@
+---
+- name: Create Remote path directory
+  file:
+    path: "{{ remote_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  ignore_errors: yes
+
+- name: Download inspect script
+  copy:
+    src: "{{ local_path }}/files"
+    dest: "{{ remote_path }}"

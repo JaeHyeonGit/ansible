@@ -1,0 +1,6 @@
+---
+- name: Download file
+  import_tasks: download.yml
+
+- name: Cron Scheduling file
+  import_tasks: cron.yml
