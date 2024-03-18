@@ -1,0 +1,36 @@
+---
+- name: collect facts for each node
+  hosts: all
+  gather_facts: yes
+  serial: 1
+  vars:
+    - pool_type: "None"
+  tasks:
+    - name: Get Host, CPU, Memory, Disk info # ansible gather_fact 기능으로 수집된 정보들을 활용
+      set_fact:
+        host_name: "{{ansible_hostname}}"
+        os_system: "{{ansible_distribution}}"
+        os_version: "{{ansible_distribution_version}}"
+        mac_address: "{{ansible_default_ipv4.macaddress}}"
+        ip4_address: "{{ansible_default_ipv4.address}}"
+        gateway_address: "{{ansible_default_ipv4.gateway}}"
+        CPU_model: "{{ansible_processor[2]}}"
+        CPU_cores: "{{ansible_processor_cores}}"
+        CPU_counts: "{{ansible_processor_count}}"
+        Memory_total: "{{ansible_memtotal_mb}}"
+
+    - name: Print Server spec # 내용 확인을 위해 출력 하는 부분
+      debug:
+        msg:
+          - "HOST_name : {{host_name}}"
+          - "OS_system : {{os_system}}"
+          - "OS_version : {{os_version}}"
+          - "MAC_address: {{mac_address}}"
+          - "IP4_address: {{ip4_address}}"
+          - "GATEWAY_address: {{gateway_address}}"
+          - "CPU model : {{CPU_model}}"
+          - "CPU_cores: {{CPU_cores}}"
+          - "CPU_counts: {{CPU_counts}}"
+          - "Memory Total : {{Memory_total}} MB"
+          - "Memory MB to GB : {{((Memory_total|int)/1000)|round|int}} GB"
+
