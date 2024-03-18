@@ -1,0 +1,28 @@
+---
+- hosts: all
+  gather_facts: false
+  vars:
+    worker: mspusr
+    workerpassword: '1234'
+  tasks:
+    - name: Make wheel group
+      group:
+        name: wheel
+        state: present
+
+    - name: Allow wheel group to passwordless sudo
+      lineinfile:
+        dest: /etc/sudoers
+        state: present
+        line: "%wheel ALL=(ALL) ALL"
+        validate: /usr/sbin/visudo -cf %s
+
+    - name: Add User with password
+      user:
+        name: "{{ worker }}"
+        shell: /bin/bash
+        group: wheel
+        append: yes
+        state: present
+        password: "{{ workerpassword | password_hash('sha512') }}"
+        createhome: yes
