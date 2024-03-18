@@ -1,0 +1,5 @@
+---
+origin_path: "/var/lib/awx/projects/NCP/roles/Centos7.8"
+target_name: awx-web
+target_ip: 192.168.31.20
+# defaults file for NCP

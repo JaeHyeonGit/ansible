@@ -1,0 +1,12 @@
+---
+- name: Create python script - Target
+  import_tasks: create_py.yml
+
+- name: Change python Script - Variable
+  import_tasks: change_py.yml
+
+- name: Create Target server - python3
+  import_tasks: create_target.yml
+
+- name: Remove python script - Target
+  import_tasks: remove_py.yml

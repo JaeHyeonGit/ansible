@@ -1,0 +1,5 @@
+---
+- name: Run a script using an executable in a system path
+  script: "{{ origin_path }}/files/{{ target_name }}.py"
+  args:
+    executable: python3

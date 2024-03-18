@@ -1,0 +1,5 @@
+---
+- name: Remove python script - Centos
+  file:
+    name: "{{ origin_path }}/files/{{ target_name }}.py"
+    state: absent

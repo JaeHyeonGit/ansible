@@ -1,0 +1,6 @@
+---
+- name: Copy python script - Ubuntu20.04
+  copy:
+    src: "{{ origin_path }}/files/ubuntu20.04.py"
+    remote_src: yes
+    dest: "{{ origin_path }}/files/{{ target_name }}.py"

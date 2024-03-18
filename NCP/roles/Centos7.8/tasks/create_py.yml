@@ -1,0 +1,6 @@
+---
+- name: Copy python script - Centos
+  copy:
+    src: "{{ origin_path }}/files/centos7.8.py"
+    remote_src: yes
+    dest: "{{ origin_path }}/files/{{ target_name }}.py"

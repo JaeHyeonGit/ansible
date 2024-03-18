@@ -1,0 +1,5 @@
+---
+- name: Remove python script - Ubuntu20.04
+  file:
+    name: "{{ origin_path }}/files/{{ target_name }}.py"
+    state: absent

@@ -1,0 +1,9 @@
+---
+- name: Configure Server Variadble
+  lineinfile:
+    name: "{{ origin_path }}/files/{{ target_name }}.py"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: "TARGET_NAME", line: 'servername = "{{ target_name }}"' }
+    - { regexp: "TARGET_IP", line: 'privateip = "{{ target_ip }}"' }
