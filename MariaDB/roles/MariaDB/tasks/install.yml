@@ -1,0 +1,31 @@
+---
+- name: Install epel-release - Extra Package For Enterprise Linux
+  yum:
+    name:
+      - epel-release
+
+- name: Download Mairadb Repo - Ver_11.0.0
+  copy:
+    src: "{{ local_path }}/files/MariaDB.repo"
+    dest: /etc/yum.repos.d
+
+- name: Yum clean all
+  shell: 
+    cmd: yum clean all
+
+- name: Install MariaDB Server/Client - Ver_11.0.0
+  yum:
+    name:
+      - MariaDB-server
+      - MariaDB-client
+
+- name: Enable Systemd MariaDB service
+  systemd:
+    daemon_reload: true
+    enabled: true
+    name: mariadb
+
+- name: Start MariaDB Service
+  systemd:
+    state: started
+    name: mariadb

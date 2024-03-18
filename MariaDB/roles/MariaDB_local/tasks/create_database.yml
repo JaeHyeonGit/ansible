@@ -1,0 +1,27 @@
+---
+- name: Database Query
+  shell:
+    cmd: |
+      mariadb -e "create user 'dbuser'@'localhost' IDENTIFIED BY 'P@ssw0rd';"
+      mariadb -e "GRANT ALL PRIVILEGES ON *.* TO 'dbuser'@'localhost' IDENTIFIED BY 'P@ssw0rd';"
+      mariadb -e "FLUSH PRIVILEGES;"
+      mariadb -e "create database login_info;"
+      mariadb -e "use login_info; create table user_info(ID VARCHAR(20) PRIMARY KEY, PW VARCHAR(20), EMAIL VARCHAR(20), NAME VARCHAR(20), BIRTH VARCHAR(20), HOBBY VARCHAR(50), INTRO VARCHAR(301));"
+  register: data
+  ignore_errors: yes
+
+- name: Check Create Result
+  debug:
+    msg: "{{ data.stdout_lines }}"
+
+- name: Create Admin account
+  shell: 
+    cmd: |
+      mariadb -e "use login_info; insert into user_info values ('admin', 'admin', 'admin@admin.com', 'administrator', '9999-09-09', '[internet]', 'adminpage');"
+  register: admin
+  ignore_errors: yes
+
+- name: Check admin account result
+  debug:
+    msg: "{{ admin.stdout_lines }}"
+ 

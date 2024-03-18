@@ -1,0 +1,7 @@
+---
+# tasks file for MariDB
+- name: Install MariaDB Ver11.0.0
+  import_tasks: install.yml
+
+- name: Create Databases
+  import_tasks: create_database.yml
