@@ -1,0 +1,116 @@
+---
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: Create SSL_DIR
+      file:
+        path: "{{ REMOTE_SSL_DIR }}"
+        state: directory
+
+    - name: Create Backup_PATH
+      file:
+        path: "{{ Backup_PATH }}"
+        state: directroy
+
+    - name: Copy LOCAL_SSL_DIR to REMOTE_SSL_DIR
+      copy:
+        src: "{{ LOCAL_SSL_DIR }}"
+        dest: "{{ REMOTE_SSL_DIR }}"
+
+    - name: Check SSLCertificateFile Path
+      shell: cat "{{ Apache_HTTPD_PATH }}/conf/extra/httpd-ssl.conf" | grep -ve "#" | grep -i "SSLCertificateFile" | cut -c 20-
+      register: file
+
+    - name: Print SSLCertificateFile Path
+      debug:
+        msg:
+        - "{{ file.stdout }}"
+
+    - name: Exist Check1
+      stat:
+        path: "{{ file.stdout }}"
+      register: check1
+
+    - name: Backup Original SSLCertificateFile
+      shell: cp "{{ file.stdout }}" "{{ Backup_PATH }}"
+      when: check1.stat.exists
+
+    - name: Change SSLCertificateFile
+      shell: \cp -f "{{ REMOTE_SSL_DIR }}/{{ SSLCertificateFile }}" "{{ file.stdout }}"
+      when: check1.stat.exists
+
+    - name: Check SSLCACertificateFile Path
+      shell: cat "{{ Apache_HTTPD_PATH }}/conf/extra/httpd-ssl.conf" | grep -ve "#" | grep -i "SSLCACertificateFile" | cut -c 22-
+      register: ca_file
+
+    - name: Print SSLCACertificateFile Path
+      debug:
+        msg:
+        - "{{ ca_file.stdout }}"
+
+    - name: Exist Check2
+      stat:
+        path: "{{ ca_file.stdout }}"
+      register: check2
+
+    - name: Backup Original SSLCACertificateFile
+      shell: cp "{{ ca_file.stdout }}" "{{ Backup_PATH }}"
+      when: check2.stat.exists
+
+    - name: Change SSLCACertificateFile
+      shell: \cp -f "{{ REMOTE_SSL_DIR }}/{{ SSLCACertificateFile }}" "{{ ca_file.stdout }}"
+      when: check2.stat.exists
+
+    - name: Check SSLCertificateKeyFile Path
+      shell: cat "{{ Apache_HTTPD_PATH }}/conf/extra/httpd-ssl.conf" | grep -ve "#" | grep -i "SSLCertificateKeyFile" | cut -c 23-
+      register: key_file
+
+    - name: Print SSLCertificateKeyFile Path
+      debug:
+        msg:
+        - "{{ key_file.stdout }}"
+
+    - name: Exists check3
+      stat:
+        path: "{{ key_file.stdout }}"
+      register: check3
+
+    - name: Backup Original SSLCertificateKeyFile
+      shell: cp "{{ key_file.stdout }}" "{{ Backup_PATH }}"
+      when: check3.stat.exists
+
+    - name: Change SSLCACertificateFile
+      shell: \cp -f "{{ REMOTE_SSL_DIR }}/{{ SSLCertificateKeyFile }}" "{{ key_file.stdout }}"
+      when: check3.stat.exists
+
+    - name: Check SSLCertificateChainFile Path
+      shell: cat "{{ Apache_HTTPD_PATH }}/conf/extra/httpd-ssl.conf" | grep -ve "#" | grep -i "SSLCertificateChainFile" | cut -c 25-
+      register: chain_file
+
+    - name: Print SSLCertificateChainFile Path
+      debug:
+        msg:
+        - "{{ chain_file.stdout }}"
+
+    - name: Exists check4
+      stat:
+        path: "{{ chain_file.stdout }}"
+      register: check4
+
+    - name: Backup Original SSLCertificateChainFile
+      shell: cp "{{ chain_file.stdout }}" "{{ Backup_PATH }}"
+      when: check4.stat.exists
+
+    - name: Change SSLCertificateChainFile
+      shell: \cp -f "{{ REMOTE_SSL_DIR }}/{{ SSLCertificateChainFile }}" "{{ chain_file.stdout }}"
+      when: check4.stat.exists
+
+    - name: Restart HTTPD GraceFull
+      shell: sh "{{ Apache_HTTPD_PATH }}/bin/httpd" -k restart
+      register: restart
+
+    - name: Print restart apache
+      debug:
+        msg:
+        - "{{ restart.stdout }}"
+
