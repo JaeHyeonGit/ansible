@@ -1,0 +1,64 @@
+---
+- hosts: all
+  name: Install UptimeKuma using Ansible
+  gather_facts: false
+  tasks:
+    - name: Install Nodejs16 version PPA source
+      get_url:
+        url: https://deb.nodesource.com/setup_16.x
+        dest: "/home/mspusr"
+        mode: '0777'
+
+    - name: Excute setup PPA source
+      command:
+        cmd: |
+          ./setup_16.x
+      args:
+        chdir: /home/mspusr/
+      register: setup
+
+    - name: Update and Update apt packages
+      apt:
+        upgrade: yes
+        update_cache: yes
+
+    - name: Install nodejs
+      apt:
+        name: nodejs
+        state: present
+
+    - name: Check nodejs version
+      shell: node -v
+      register: ver01
+
+    - name: Print version check
+      debug:
+        msg:
+        - "{{ ver01.stdout }}"
+
+    - name: Install pm2 using npm
+      npm:
+        name: pm2
+        global: yes
+        executable:
+        state: present
+
+    - name: Clone the repository
+      git:
+        repo: https://github.com/louislam/uptime-kuma.git
+        dest: "/root/uptime-kuma"
+        clone: yes
+
+    - name: Start uptimekuma using pm2
+      command:
+        cmd: |
+          pm2 start server/server.js
+      args:
+        chdir: /root/uptime-kuma
+      register: kuma
+
+    - name: Print kuma status
+      debug:
+        msg:
+        - "{{ kuma.stdout }}"
+
