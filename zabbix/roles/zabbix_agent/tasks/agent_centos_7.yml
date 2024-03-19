@@ -1,0 +1,65 @@
+---
+- name: Download zabbix package
+  copy:
+    src: "{{ local_path }}/files/zabbix-release-6.0-4.el7.noarch.rpm"
+    dest: "{{ remote_path }}/zabbix-release-6.0-4.el7.noarch.rpm"
+
+- name: Install package
+  yum:
+    name: "{{ remote_path }}/zabbix-release-6.0-4.el7.noarch.rpm"
+    state: present
+
+- name: Clean all
+  shell: yum clean all
+
+- name: Update the System Packages
+  yum:
+    update_cache: yes
+
+- name: Update all installed package
+  yum:
+    name: "*"
+    state: latest
+
+- name: Install zabbix package
+  yum:
+    name: zabbix-agent
+    state: latest
+
+- name: Create hostname
+  shell:
+    cmd: |    
+      hostname | cut  -d '.' -f 1
+  register: hostname
+
+- name: Print hostname
+  debug:
+    msg:
+      - "{{ hostname.stdout }}"
+
+- name: Configure Hostname
+  lineinfile:
+    path: /etc/zabbix/zabbix_agentd.conf
+    regexp: "Hostname=Zabbix server"
+    line: "Hostname={{ hostname.stdout }}"
+
+- name: Configure Zabbix Server ip
+  lineinfile:
+    path: /etc/zabbix/zabbix_agentd.conf
+    regexp: "Server=127.0.0.1"
+    line: "Server={{ zabbix_server_ip }}"
+
+- name: Configure Zabbix ServerActive ip
+  lineinfile:
+    path: /etc/zabbix/zabbix_agentd.conf
+    regexp: "ServerActive=127.0.0.1"
+    line: "ServerActive={{ zabbix_server_ip }}"
+
+- name: Allow system.run
+  lineinfile:
+    path: /etc/zabbix/zabbix_agentd.conf
+    regexp: "# DenyKey=system.run[*]"
+    line: "AllowKey=system.run[*]" 
+  notify:
+    - Start zabbix-agent service
+    - Restart zabbix-agent service
