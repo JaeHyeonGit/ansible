@@ -1,0 +1,59 @@
+---
+- name: Setting AJP Variable
+  set_fact:
+    xml_block: |
+          <Connector protocol="AJP/1.3"
+                     address="0.0.0.0"
+                     secretRequired="false"
+                     port=AJP_PORT
+                     redirectPort="8443" />
+
+- name : Readm xml variable      
+  shell: cat /data/tomcat/apache-tomcat-8.5.93/conf/server.xml | grep 0.0.0.0 | cut -d "=" -f2 
+  register: xml_var 
+  ignore_errors: yes
+
+- name: Configure Server.xml - excute ajp
+  blockinfile:
+    path: /data/tomcat/apache-tomcat-8.5.93/conf/server.xml
+    block: "{{ xml_block }}"
+    insertbefore: "Define an AJP 1.3 Connector on port 8009"
+    create: yes
+    marker: ' '
+  when: not xml_var.stdout == "0.0.0.0"
+
+- name: Insert AJP Port - Tomcat port
+  lineinfile:
+    name: /data/tomcat/apache-tomcat-8.5.93/conf/server.xml
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: "AJP_PORT", line: '           port="{{ AJP_PORT }}"' }
+
+- name: Configure Server.xml - Context path
+  lineinfile:
+    path: /data/tomcat/apache-tomcat-8.5.93/conf/server.xml
+    insertafter: 'unpackWARs="true" autoDeploy="true">'
+    line: '      <Context path="" docBase="app" reloadable="false"/>'
+
+- name: Configure Context.xml
+  lineinfile:
+    path: /data/tomcat/apache-tomcat-8.5.93/conf/context.xml
+    insertbefore: "</Context>"
+    line: "{{item}}"
+  with_items:
+    - '<Resource name="jdbc_maria" auth="Container" type="javax.sql.DataSource"'
+    - '    maxTotal="100" maxIdle="30" maxWaitMillis="10000"'
+    - '    username="dbuser" password="P@ssw0rd"'
+    - '    driverClassName="org.mariadb.jdbc.Driver"'
+    - '    url="jdbc:mysql://DB_IP/login_info"/>'
+
+- name: Config DB_IP
+  lineinfile:
+    name: /data/tomcat/apache-tomcat-8.5.93/conf/context.xml
+    regexp: DB_IP
+    line: '    url="jdbc:mysql://{{ DB_IP }}/login_info"/>'
+
+- name: Restart Tomcat Service
+  shell:
+    cmd: systemctl restart tomcat

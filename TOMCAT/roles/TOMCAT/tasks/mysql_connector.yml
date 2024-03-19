@@ -1,0 +1,5 @@
+---
+- name: Download mysql-connector - mararidb-client-1.8.0
+  copy:
+    src: "{{ local_path }}/files/mariadb-java-client-1.8.0.jar"
+    dest: /data/tomcat/apache-tomcat-8.5.93/lib/mariadb-java-client-1.8.0.jar

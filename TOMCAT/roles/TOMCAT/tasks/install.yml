@@ -1,0 +1,76 @@
+---
+- name: Create Tomcat Directory
+  file:
+    path: /data/tomcat
+    state: directory
+    mode: '0755'
+
+- name: Install Apache Tomcat - 8.5.93
+  unarchive:
+    src: "{{ local_path }}/files/apache-tomcat-8.5.93.tar.gz"
+    dest: /data/tomcat
+
+- name: Install JAVA - openjdk 11.0.2
+  unarchive:
+    src: "{{ local_path }}/files/openjdk-11.0.2_linux-x64_bin.tar.gz"
+    dest: /data/tomcat
+
+- name: Register Environment Variable
+  lineinfile:
+    path: /etc/profile
+    line: '{{ item }}'
+  with_items:
+    - export JAVA_HOME=/data/tomcat/jdk-11.0.2
+    - export PATH=$PATH:$JAVA_HOME/bin
+    - export CLASSPATH=.:$JAVA_HOME/lib/tools.jar
+    - export CATALINA_HOME=/data/tomcat/apache-tomcat-8.5.93
+
+- name: Apply Environment Variable
+  shell: source /etc/profile
+  register: apply
+
+- name: Check apply Environment Variadb Result
+  debug:
+    msg: "{{ apply.stdout_lines }}"
+
+- name: Create Tomcat User
+  user:
+    name: tomcat
+    shell: /sbin/nologin
+
+- name: Register Systemd - Tomcat service
+  lineinfile:
+    name: /etc/systemd/system/tomcat.service
+    create: yes
+    line: '{{ item }}'
+  with_items:
+    - "[Unit]"
+    - Description=tomcat10
+    - After=network.target syslog.target
+    - ""
+    - "[Service]"
+    - Type=forking
+    - Environment=JAVA_HOME=/data/tomcat/jdk-11.0.2
+    - Environment=CATALINA_HOME=/data/tomcat/apache-tomcat-8.5.93
+    - User=tomcat
+    - Group=tomcat
+    - ExecStart=/data/tomcat/apache-tomcat-8.5.93/bin/startup.sh
+    - ExecStop=/data/tomcat/apache-tomcat-8.5.93/bin/shutdown.sh
+    - ""
+    - "[Install]"
+    - WantedBy=multi-user.target
+
+- name: Change Owner Group Tomcat Directory
+  shell:
+    cmd: |
+      chown -R tomcat:tomcat /data/tomcat
+
+- name: Enable Systemd Apache Tomcat Service
+  shell:
+    cmd: |
+      systemctl daemon-reload
+      systemctl enable tomcat
+      systemctl start tomcat
+
+
+

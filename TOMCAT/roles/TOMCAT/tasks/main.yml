@@ -1,0 +1,9 @@
+---
+- name: Install Apache Tomcat
+  import_tasks: install.yml
+
+- name: AJP Configuration
+  import_tasks: set_ajp.yml
+
+- name: Download mysql connector 
+  import_tasks: mysql_connector.yml
