@@ -1,0 +1,4 @@
+---
+# defaults file for TOMCAT
+local_path: "/var/lib/awx/projects/TOMCAT/roles/TOMCAT"
+AJP_PORT: "8009"
